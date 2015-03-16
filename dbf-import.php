@@ -1,12 +1,10 @@
 <?php
 
-$tbl = "agri";
-$db_uname = 'root';
-$db_passwd = '';
-$db = 'ls_admin';
+@include "config.php";
+
+print_r ("$dir");
 $conn = mysql_pconnect('localhost',$db_uname, $db_passwd);
 
-$dir = 'data1_0303';
 
 $files1 = scandir($dir)
 or die ("Error! Could not open directory '$dir'.");
