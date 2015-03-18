@@ -1,11 +1,13 @@
 <?php
 
-@include "config.php";
+@include "config.php";			// please copy the config.sample.php and edit the correct fields
+
 @include "classes/XBase/Table.php";
 @include "classes/XBase/Column.php";
 @include "classes/XBase/Record.php";
 
 use XBase\Table;
+
 
 $files = scandir($xbase_dir) or die ("Error! Could not open directory '$xbase_dir'.");
 $conn = new mysqli($db_host, $db_uname, $db_passwd, $db_name) or die ("Error connecting to mysql $mysqli->connect_error");
