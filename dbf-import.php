@@ -1,127 +1,175 @@
 <?php
 
 @include "config.php";
+@include "classes/XBase/Table.php";
+@include "classes/XBase/Column.php";
+@include "classes/XBase/Record.php";
 
-print_r ("$dir");
-$conn = mysql_pconnect('localhost',$db_uname, $db_passwd);
+use XBase\Table;
 
+$files = scandir($xbase_dir) or die ("Error! Could not open directory '$xbase_dir'.");
+$conn = new mysqli($db_host, $db_uname, $db_passwd, $db_name) or die ("Error connecting to mysql $mysqli->connect_error");
 
-$files1 = scandir($dir)
-or die ("Error! Could not open directory '$dir'.");
-
-foreach ($files1 as $file1) 
+foreach ($files as $file) 
 {
   // print_r ($file1);
-  switch ($file1) {
-  case (preg_match("/dbf$/", $file1) ? true : false):
-  	print_r("DBF: $file1\n");
-  	dbftomysql($file1);
+  switch ($file) {
+  case (preg_match("/dbf$/i", $file) ? true : false):
+  	print_r("DBF: $file\n");
+  	dbftomysql($file);
   	break;
   default:
-  	print_r("Other file: $file1\n");
+  	print_r("Other file: $file\n");
   }
 
 }
 
-function dbftomysql($file1) {
+function dbftomysql($file) {
 	// Path to dbase file
-	global $dir;
-	print_r ("$dir\n");
-
-	$db_path = sprintf("%s/%s",$dir,$file1);
-	print_r ("$db_path\n");
+	global $xbase_dir;
+	global $conn;
+	$db_path = sprintf("%s/%s",$xbase_dir,$file);
 	// Open dbase file
-	$dbh = dbase_open($db_path, 0);
-	 // || die ("Sorry, can't open '$db_path'.");
-
-	// Get column information
-	$column_info = dbase_get_header_info($dbh);
-
-	// Display information
-	print_r($column_info);
-
-	return;
-
+	$table = new Table($db_path);
+	$tbl = substr($file,0,strlen($file)-4);
+	print_r ("$tbl");
 	$line = array();
 
-	foreach($column_info as $col)
-	{
-		switch($col['type'])
+	foreach ($table->getColumns() as $column) {
+		print_r("\t$column->name ($column->type / $column->length)\n");
+		// print_r("$column->type\n");
+
+		switch($column->type)
 		{
-		case 'character':
-			$line[]= "`$col[name]` VARCHAR( $col[length] )";
+		case 'C':	// Character field
+			$line[]= "`$column->name` VARCHAR($column->length)";
 			break;
-		case 'number':
-			$line[]= "`$col[name]` FLOAT";
+		case 'F':	// Floating Point
+			$line[]= "`$column->name` FLOAT";
 			break;
-		case 'boolean':
-			$line[]= "`$col[name]` BOOL";
+		case 'N':	// Numeric
+			$line[]= "`$column->name` INT";
 			break;
-		case 'date':
-			$line[]= "`$col[name]` DATE";
+		case 'L':	// Logical - ? Y y N n T t F f (? when not initialized).
+			$line[]= "`$column->name` TINYINT";
 			break;
-		case 'memo':
-			$line[]= "`$col[name]` TEXT";
+		case 'D':	// Date
+			$line[]= "`$column->name` DATE";
+			break;
+		case 'T':	// DateTime
+			$line[]= "`$column->name` DATETIME";
+			break;
+		case 'M':	// Memo type field
+			$line[]= "`$column->name` TEXT";
 			break;
 		}
 	}
 
 	$str = implode(",",$line);
+	// print_r ("$str\n");
+
 	$sql = "CREATE TABLE `$tbl` ( $str );";
+	// print_r ("$sql\n");
 
-	mysql_select_db($db,$conn);
+	if ($conn->query("$sql") === TRUE) {
+		echo "Table $tbl successfully created";
+	}
 
-	mysql_query($sql,$conn);
-	set_time_limit(0); // I added unlimited time limit here, because the records I imported were in the hundreds of thousands.
+	$table->close();
 
-	// This is part 2 of the code
-
-	import_dbf($db, $tbl, $db_path);
+	// import_dbf($db_path, $tbl);
 }
 
-function import_dbf($db, $table, $dbf_file)
-{
-global $conn;
-if (!$dbf = dbase_open ($dbf_file, 0)){ die("Could not open $dbf_file for import."); }
-$num_rec = dbase_numrecords($dbf);
-$num_fields = dbase_numfields($dbf);
-$fields = array();
+function import_dbf($db_path, $tbl) {
+	global $conn;
+	// print_r ("$db_path\n");
+	$table = new Table($db_path);
 
-for ($i=1; $i<=$num_rec; $i++){
-$row = @dbase_get_record_with_names($dbf,$i);
-$q = "insert into $db.$table values (";
-foreach ($row as $key => $val){
-if ($key == 'deleted'){ continue; }
-$q .= "'" . addslashes(trim($val)) . "',"; // Code modified to trim out whitespaces
-}
-if (isset($extra_col_val)){ $q .= "'$extra_col_val',"; }
-$q = substr($q, 0, -1);
-$q .= ')';
-//if the query failed - go ahead and print a bunch of debug info
-if (!$result = mysql_query($q, $conn)){
-print (mysql_error() . " SQL: $q
-\n");
-print (substr_count($q, ',') + 1) . " Fields total.
+	print_r ("$table->recordCount\n");
+	print_r (sizeof($table->columns));
 
-";
-$problem_q = explode(',', $q);
-$q1 = "desc $db.$table";
-$result1 = mysql_query($q1, $conn);
-$columns = array();
-$i = 1;
-while ($row1 = mysql_fetch_assoc($result1)){
-$columns[$i] = $row1['Field'];
-$i++;
-}
-$i = 1;
-foreach ($problem_q as $pq){
-print "$i column: {$columns[$i]} data: $pq
-\n";
-$i++;
-}
-die();
-}
-}
+	// print_r("$table->getRecordCount()");
+	// print_r("$table->getColumnCount()");
+	// return;
+	// if (!$dbf = dbase_open ($dbf_file, 0)){ die("Could not open $dbf_file for import."); }
+	// $num_rec = dbase_numrecords($dbf);
+	// $num_fields = dbase_numfields($dbf);
+	// $table->getColumns() as $column;
+	while ($record=$table->nextRecord()) {
+		$fields = array();
+		$line = array();
+		foreach ($record->getColumns() as $column) {
+			// print_r("\t\t$column->name\t");
+			// $res=$record->getObject($column);
+			// print_r ("$res\n");
+			$fields[]=$column->name;
+			print_r("$column->name\n");
+			switch($column->type) {
+				case 'C':	// Character field
+				case 'M':	// Memo type field
+					$line[]= sprintf("'%s'", $record->getObject($column) );
+					break;
+				case 'F':	// Floating Point
+					$line[]=sprintf("%7.2f", $record->getObject($column) );
+					break;
+				case 'N':	// Numeric
+					$line[]=sprintf("%d", $record->getObject($column) );
+					break;
+				case 'L':	// Logical - ? Y y N n T t F f (? when not initialized).
+					$line[] = ($record->getBoolean($column) ? 1 : 0); 
+					break;
+				case 'T':	// DateTime
+				case 'D':	// Date
+					$line[]= sprintf("'%s'", strftime("%Y-%m-%d %H:%M", $record->getObject($column) ) );
+					break;
+			}			
+		}
+
+		$val = implode(",",$line);
+		$col = implode(",",$fields);
+
+		$sql = "insert into `$tbl` ($col) values ($val)\n";
+		print_r ("$sql");
+		if ($conn->query("$sql") === TRUE) {
+			echo "Record $sql successfully inserted\n";
+		}
+	}
+	return;
+
+	$fields = array();
+	$fields=$table->getColumns();
+	print_r ("$fields\n");
+	for ($i=1; $i<=sizeof($table->columns); $i++) {
+		$row = @dbase_get_record_with_names($dbf,$i);
+		$q = "insert into $db.$table values (";
+		foreach ($row as $key => $val){
+			if ($key == 'deleted'){ continue; }
+			$q .= "'" . addslashes(trim($val)) . "',"; // Code modified to trim out whitespaces
+		}
+		if (isset($extra_col_val)){ $q .= "'$extra_col_val',"; }
+		$q = substr($q, 0, -1);
+		$q .= ')';
+		//if the query failed - go ahead and print a bunch of debug info
+		if (!$result = mysql_query($q, $conn)){
+			print (mysql_error() . " SQL: $q \n");
+			print (substr_count($q, ',') + 1) . " Fields total. ";
+			$problem_q = explode(',', $q);
+			$q1 = "desc $db.$table";
+			$result1 = mysql_query($q1, $conn);
+			$columns = array();
+			$i = 1;
+			while ($row1 = mysql_fetch_assoc($result1)){
+				$columns[$i] = $row1['Field'];
+				$i++;
+			}
+			$i = 1;
+			foreach ($problem_q as $pq){
+				print "$i column: {$columns[$i]} data: $pq\n";
+				$i++;
+			}
+			die();
+		}
+	}
 }
 
 

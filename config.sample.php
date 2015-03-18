@@ -1,10 +1,9 @@
 <?php
 
-$tbl = "test";
 $db_uname = 'root';
 $db_passwd = '';
-$db = 'demo';
+$db_name = 'data';
+$db_host = 'localhost';
 
-$dir = 'data';
-
+$xbase_dir = 'data';
 ?>
