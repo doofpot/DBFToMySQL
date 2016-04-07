@@ -44,31 +44,29 @@ function dbftomysql($file) {
 
 	foreach ($table->getColumns() as $column) {
 		print_r("\t$column->name ($column->type / $column->length)\n");
-		// print_r("$column->type\n");
-
-		switch($column->type)
-		{
-		case 'C':	// Character field
-			$line[]= "`$column->name` VARCHAR($column->length)";
-			break;
-		case 'F':	// Floating Point
-			$line[]= "`$column->name` FLOAT";
-			break;
-		case 'N':	// Numeric
-			$line[]= "`$column->name` INT";
-			break;
-		case 'L':	// Logical - ? Y y N n T t F f (? when not initialized).
-			$line[]= "`$column->name` TINYINT";
-			break;
-		case 'D':	// Date
-			$line[]= "`$column->name` DATE";
-			break;
-		case 'T':	// DateTime
-			$line[]= "`$column->name` DATETIME";
-			break;
-		case 'M':	// Memo type field
-			$line[]= "`$column->name` TEXT";
-			break;
+		switch($column->type) {
+			case 'C':	// Character field
+				$line[]= "`$column->name` VARCHAR($column->length)";
+				break;
+			case 'F':	// Floating Point
+				$line[]= "`$column->name` FLOAT";
+				break;
+			case 'N':	// Numeric
+				$line[]= "`$column->name` INT";
+				break;
+			case 'L':	// Logical - ? Y y N n T t F f (? when not initialized).
+				$line[]= "`$column->name` TINYINT";
+				break;
+			case 'D':	// Date
+				$line[]= "`$column->name` DATE";
+				break;
+			case 'T':	// DateTime
+				$line[]= "`$column->name` DATETIME";
+				break;
+			case 'M':	// Memo type field
+			default:
+				$line[]= "`$column->name` TEXT";
+				break;
 		}
 	}
 
