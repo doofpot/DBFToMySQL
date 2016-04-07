@@ -1,25 +1,42 @@
 DBF To MySQL
-------------
+========================================================================================================================
 
-This script imports DBASE/FoxPro files, located in a subdir into mysql. I needed to write this for reverse
-engeneering a foxpro application. For OS/X and Linux, I didn't find any usefull and working tool to do this
+This script imports DBASE/FoxPro files, located in a subdir, into a MySQL database. It can be used for reverse
+engeneering of FoxPro applications. For OS/X and Linux, I didn't find any usefull and working tool to do this
 automatically.
 
-This script is based on: http://stackoverflow.com/questions/14270236/php-script-to-convert-dbf-files-to-mysql 
+This script is based on: 
 
-But for foxpro files the dbase library which is standard in php, didn't work, so I used https://github.com/hisamu/php-xbase
+* https://github.com/doofpot/DBFToMySQL
+* http://stackoverflow.com/questions/14270236/php-script-to-convert-dbf-files-to-mysql
+* http://www.ostalks.com/2009/12/31/import-dbf-files-to-mysql-using-php/
 
-and ofcourse, I updated all the things to mysqli interface.
 
-It's "tested" with my feed of foxpro files. It seems to work.
+Installation and use
+------------------------------------------------------------------------------------------------------------------------
+
+* Install php-xbase and this library from Github in the same directory. The dbase extension for PHP don't read MEMO data (or do it badly), so php-xbase is needed.
+
+```bash
+git clone https://github.com/hisamu/php-xbase.git
+git clone https://github.com/jorgecasas/DBFToMySQL.git
+
+```
+* Configure MySQL info and paths to directory where DBF/PFT files are located in configuration file **config.php**
+
+* Use it:
+
+```php
+php dbf-import.php
+```
 
 Known-issues
-- if a date field is 0, then the the corresponding date with 0 is inserted (january first, 1970). This is a bug, but it needs 2 other lines (and it's now too late)
+------------------------------------------------------------------------------------------------------------------------
+
+- if a date field is 0, then the the corresponding date with 0 is inserted (january first, 1970).
 - the php-xbase thing is in the subdir "classes". As a ruby programmer, i didn't find how to make this separate whithin the day, I spent on solving this problem. If someone can help me with this problem.
 
-
-It's now 18 march 2015 and this is my first public published script in 8 years.
-
 License
+------------------------------------------------------------------------------------------------------------------------
 
 MIT
