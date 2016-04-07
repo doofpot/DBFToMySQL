@@ -1,4 +1,4 @@
-DBF To MySQL
+DBF To MySQL 
 ========================================================================================================================
 
 This script imports DBASE/FoxPro files, located in a subdir, into a MySQL database. It can be used for reverse
