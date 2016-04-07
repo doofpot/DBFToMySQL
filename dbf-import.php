@@ -124,13 +124,15 @@ function import_dbf($db_path, $tbl) {
 		$val = implode(",",$line);
 		$col = implode(",",$fields);
 
-		$sql = "insert into `$tbl` ($col) values ($val)\n";
+		$sql = "INSERT INTO `$tbl` ($col) VALUES ($val)\n";
 		// print_r ("$sql");
 		if ($conn->query("$sql") === TRUE) {
 			$i++;
 			if ( $i % 100 == 0 ) {
 				echo "$i records inserted in $tbl\n";
 			}
+		}else {
+			echo "Error SQL: ".$conn->error ." >> $sql \n";
 		}
 	}
 	$table->close();
@@ -145,7 +147,7 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
     $Test = new DBFhandler( $dbf_path, $fpt_path );
     while ( ($Record = $Test->GetNextRecord( true )) and ! empty( $Record ) ) {
         $a = 0;
-        $sql1 = "INSERT INTO $table (";
+        $sql1 = "INSERT INTO `$table` (";
         $sql2 = ") values (";
         $sql = "";
         foreach ( $Record as $key => $val ) {
@@ -169,7 +171,7 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
 				echo ".";
 			}
 		} else {
-			echo "Error SQL: $sql ";
+			echo "Error SQL: ".$conn->error ." >> $sql \n";
 		}
 
     }
