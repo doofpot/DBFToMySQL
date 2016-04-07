@@ -9,7 +9,11 @@
 
 use XBase\Table;
 
+ // Initializing vars
+ini_set( 'memory_limit', '2048M' );
+set_time_limit( 0 );
 
+$time_start = time();
 $files = scandir($xbase_dir) or die ("Error! Could not open directory '$xbase_dir'.");
 $conn = new mysqli($db_host, $db_uname, $db_passwd, $db_name) or die ("Error connecting to mysql $mysqli->connect_error");
 
@@ -24,6 +28,8 @@ foreach ($files as $file) {
   }
 
 }
+$time_end = time();
+"\n\nImport finished! Time spent: ". round( ( $time_end - $time_start ) / 60, 2 ) ." minutes\n";
 
 function dbftomysql($file) {
 	// Path to dbase file
