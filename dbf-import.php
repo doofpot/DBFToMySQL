@@ -73,13 +73,12 @@ function dbftomysql($file) {
 	}
 
 	$str = implode(",",$line);
-	// print_r ("$str\n");
-
 	$sql = "CREATE TABLE `$tbl` ( $str );";
-	print_r ("$sql\n");
 
 	if ($conn->query("$sql") === TRUE) {
-		echo "Table $tbl successfully created";
+		echo "Table $tbl successfully created\n";
+	} else {
+		echo "Error SQL: ".$conn->error ." >> $sql \n";
 	}
 
 	$table->close();
@@ -137,7 +136,7 @@ function import_dbf($db_path, $tbl) {
 			if ( $i % 100 == 0 ) {
 				echo "$i records inserted in $tbl\n";
 			}
-		}else {
+		} else {
 			echo "Error SQL: ".$conn->error ." >> $sql \n";
 		}
 	}
