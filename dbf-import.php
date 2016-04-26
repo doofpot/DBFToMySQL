@@ -166,7 +166,7 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
         $sql = "";
         foreach ( $Record as $key => $val ) {
         	$key = (strpos($key, 0x00) !== false ) ? substr($key, 0, strpos($key, 0x00)) : $key;
-        	echo "Key: $key\n";
+
             if ( $val == '{BINARY_PICTURE}' ) {
                 continue;
             }
