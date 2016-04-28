@@ -35,6 +35,8 @@ function dbftomysql($file) {
 	// Path to dbase file
 	global $xbase_dir;
 	global $conn;
+	global $die_on_mysql_error;
+
 	$db_path = sprintf("%s/%s",$xbase_dir,$file);
 	// Open dbase file
 	$table = new Table($db_path);
@@ -71,12 +73,15 @@ function dbftomysql($file) {
 	}
 
 	$str = implode(",",$line);
-	$sql = "CREATE TABLE `$tbl` ( $str );";
+	$sql = "CREATE TABLE IF NOT EXISTS `$tbl` ( $str );";
 
 	if ($conn->query("$sql") === TRUE) {
 		echo "Table $tbl successfully created\n";
 	} else {
 		echo "Error SQL: ".$conn->error ." >> $sql \n";
+		if ($die_on_mysql_error) {
+			die;
+		}
 	}
 
 	$table->close();
@@ -90,6 +95,7 @@ function dbftomysql($file) {
 
 function import_dbf($db_path, $tbl) {
 	global $conn;
+	global $die_on_mysql_error;
 	// print_r ("$db_path\n");
 	$table = new Table($db_path);
 
@@ -114,14 +120,14 @@ function import_dbf($db_path, $tbl) {
 					$line[]=sprintf("%d", $record->getObject($column) );
 					break;
 				case 'L':	// Logical - ? Y y N n T t F f (? when not initialized).
-					// $line[] = sprintf("%d", ($record->getBoolean($column) ? 1 : 0) ); 
-					$line[] = sprintf("%d", $record->getString($column->name) ); 
+					// $line[] = sprintf("%d", ($record->getBoolean($column) ? 1 : 0) );
+					$line[] = sprintf("%d", $record->getString($column->name) );
 					break;
 				case 'T':	// DateTime
 				case 'D':	// Date
 					$line[]= sprintf("'%s'", strftime("%Y-%m-%d %H:%M", $record->getObject($column) ) );
 					break;
-			}			
+			}
 		}
 
 		$val = implode(",",$line);
@@ -134,8 +140,12 @@ function import_dbf($db_path, $tbl) {
 			if ( $i % 100 == 0 ) {
 				echo "$i records inserted in $tbl\n";
 			}
+			die;
 		} else {
 			echo "Error SQL: ".$conn->error ." >> $sql \n";
+			if ($die_on_mysql_error) {
+				die;
+			}
 		}
 	}
 	$table->close();
@@ -146,6 +156,7 @@ function import_dbf($db_path, $tbl) {
 function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
 	echo "Initializing import: Table $table\n";
 	global $conn;
+	global $die_on_mysql_error;
     $i = 0;
     $Test = new DBFhandler( $dbf_path, $fpt_path );
     while ( ($Record = $Test->GetNextRecord( true )) and ! empty( $Record ) ) {
@@ -154,16 +165,18 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
         $sql2 = ") values (";
         $sql = "";
         foreach ( $Record as $key => $val ) {
+        	$key = (strpos($key, 0x00) !== false ) ? substr($key, 0, strpos($key, 0x00)) : $key;
+
             if ( $val == '{BINARY_PICTURE}' ) {
                 continue;
             }
             $val = str_replace( "'", "", $val );
             $a = $a + 1;
             if ( $a == 1 ) {
-                $sql1 .=$key;
+                $sql1 .="`$key`";
                 $sql2 .="'" . trim( $val ) . "'";
             } else {
-                $sql1 .=",$key";
+                $sql1 .=",`$key`";
                 $sql2 .=",'$val'";
             }
         }
@@ -175,9 +188,11 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
 			}
 		} else {
 			echo "Error SQL: ".$conn->error ." >> $sql \n";
+			if ($die_on_mysql_error) {
+				die;
+			}
 		}
-
-    }
+  }
 
 	echo "Table $table imported\n";
 
