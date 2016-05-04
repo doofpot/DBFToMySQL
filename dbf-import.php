@@ -133,6 +133,8 @@ function import_dbf($db_path, $tbl) {
 		$val = implode(",",$line);
 		$col = implode(",",$fields);
 
+        if($GLOBALS['from_encoding']!="")$val = mb_convert_encoding($val, 'UTF-8', $GLOBALS['from_encoding'] );
+
 		$sql = "INSERT INTO `$tbl` ($col) VALUES ($val)\n";
 		// print_r ("$sql");
 		if ($conn->query("$sql") === TRUE) {
@@ -171,6 +173,7 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
                 continue;
             }
             $val = str_replace( "'", "", $val );
+            if($GLOBALS['from_encoding']!="")$val = mb_convert_encoding($val, 'UTF-8', $GLOBALS['from_encoding'] );
             $a = $a + 1;
             if ( $a == 1 ) {
                 $sql1 .="`$key`";
