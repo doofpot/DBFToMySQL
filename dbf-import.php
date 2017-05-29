@@ -5,6 +5,7 @@
 @include "classes/XBase/Table.php";
 @include "classes/XBase/Column.php";
 @include "classes/XBase/Record.php";
+@include "classes/XBase/Memo.php";
 @include "classes/DBFhandler.php";
 
 use XBase\Table;
