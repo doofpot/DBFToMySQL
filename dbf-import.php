@@ -177,10 +177,10 @@ function import_dbf_to_mysql( $table, $dbf_path, $fpt_path ) {
             $a = $a + 1;
             if ( $a == 1 ) {
                 $sql1 .="`$key`";
-                $sql2 .="'" . trim( $val ) . "'";
+                $sql2 .="'" . trim( mysqli_real_escape_string($conn, $val) ) . "'";
             } else {
                 $sql1 .=",`$key`";
-                $sql2 .=",'$val'";
+                $sql2 .=",'". mysqli_real_escape_string($conn, $val) ."'";
             }
         }
         $sql = "$sql1 $sql2)";
