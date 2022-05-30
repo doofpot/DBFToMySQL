@@ -1,5 +1,9 @@
+This repository is not maintained. Use it for your own ideas. I don't maintain it any more, because I don't 
+need it. We migrated all our stuff to MySQL and MSSQL.
+
 DBF To MySQL 
 ========================================================================================================================
+
 
 This script imports DBASE/FoxPro files, located in a subdir, into a MySQL database. It can be used for reverse
 engeneering of FoxPro applications. For OS/X and Linux, I didn't find any usefull and working tool to do this
