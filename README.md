@@ -11,7 +11,7 @@ automatically.
 
 This script is based on: 
 
-* https://github.com/doofpot/DBFToMySQL
+* Commits added by https://github.com/jorgecasas/DBFToMySQL
 * http://stackoverflow.com/questions/14270236/php-script-to-convert-dbf-files-to-mysql
 * http://www.ostalks.com/2009/12/31/import-dbf-files-to-mysql-using-php/
 
@@ -23,7 +23,7 @@ Installation and use
 
 ```bash
 git clone https://github.com/hisamu/php-xbase.git
-git clone https://github.com/jorgecasas/DBFToMySQL.git
+git clone https://github.com/doofpot/DBFToMySQL.git
 
 ```
 * Configure MySQL info and paths to directory where DBF/PFT files are located in configuration file **config.php**
